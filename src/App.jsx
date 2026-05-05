@@ -141,6 +141,7 @@ function SiteLoader({ isVisible }) {
   );
 }
 
+
 function Navigation() {
   const [scrolled, setScrolled] = useState(false);
 
