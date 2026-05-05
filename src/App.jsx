@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
+import { useProgress } from "@react-three/drei";
+import { motion, useInView, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 import {
   Apple,
   BadgeCheck,
@@ -17,56 +18,59 @@ const beats = [
   {
     side: "left",
     label: "Beat 00",
-    title: "blink — nothing like it.",
-    copy: "A digital banking experience that keeps one fully 3D iPhone centered while the story changes as the user scrolls.",
-    screen: "splash",
+    title: "Rewards overview",
+    copy: "Coins, vouchers, quests, and the bottom app nav sit inside the phone as the first product moment.",
+    screen: "rewards-overview",
   },
   {
     side: "left",
     label: "Beat 01",
-    title: "Account & Money",
-    copy: "Balances, linked accounts, and savings goals stay visible on a simple dashboard.",
-    screen: "account",
+    title: "Send money",
+    copy: "The screen transitions into a focused transfer flow with recipient, source account, amount, and review action.",
+    screen: "send-money",
   },
   {
     side: "right",
     label: "Beat 02",
-    title: "QR Payments",
-    copy: "Share a QR or username instantly for quick payment collection.",
-    screen: "qr",
+    title: "Quest cards",
+    copy: "Rewards expand into weekly, seasonal, and savings quests with clean progress and start actions.",
+    screen: "rewards-quests",
   },
   {
     side: "left",
     label: "Beat 03",
-    title: "Send & Receive",
-    copy: "Transfers feel live with a fast, readable feed of incoming and outgoing activity.",
-    screen: "transfer",
+    title: "Reward balance",
+    copy: "The phone returns to the high-value coin balance so the loop feels like a real app journey.",
+    screen: "rewards-overview",
   },
   {
     side: "right",
     label: "Beat 04",
-    title: "Rewards",
-    copy: "Make Blink Points and tier benefits feel desirable, premium, and easy to browse.",
-    screen: "rewards",
+    title: "Review payment",
+    copy: "The money-send page lands again, making the green call to action the clear next step.",
+    screen: "send-money",
   },
   {
     side: "left",
     label: "Beat 05",
-    title: "Trust & Security",
-    copy: "Security gets its own moment with biometrics, fraud AI, and encryption.",
-    screen: "security",
+    title: "Mega quest",
+    copy: "A full-width savings quest closes the sequence with a stronger rewards story.",
+    screen: "rewards-quests",
   },
   {
     side: "right",
     label: "Beat 06",
-    title: "Bill Pay",
-    copy: "Paid, pending, and scheduled bills are grouped into a clean utility dashboard.",
-    screen: "bills",
+    title: "Rewards in motion",
+    copy: "Each scroll beat swaps the mobile screen with a smooth in-device transition.",
+    screen: "rewards-overview",
   },
 ];
 
 const STORY_SCROLL_END = 0.7;
-const PHONE_FULL_ROTATION_DEG = 360;
+const PHONE_ROTATION_END_PROGRESS = 0.22;
+const PHONE_MAX_ROTATION_DEG = 24;
+const SCREEN_INTRO_START = 0.02;
+const SCREEN_INTRO_END = 0.08;
 
 const featureCards = [
   ["Account overview", "See savings, current balance, and linked accounts in one place."],
@@ -85,18 +89,56 @@ const howItWorks = [
 ];
 
 export default function App() {
+  const [modelReady, setModelReady] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.toggle("site-loading", !modelReady);
+    return () => document.body.classList.remove("site-loading");
+  }, [modelReady]);
+
   return (
-    <main>
-      <Navigation />
-      <HeroIntro />
-      <BlinkScrollExperience />
-      <FeaturesGrid />
-      <HowItWorks />
-      <TrustStrip />
-      <Stats />
-      <DownloadCTA />
-      <Footer />
-    </main>
+    <>
+      <SiteLoader isVisible={!modelReady} />
+      <main>
+        <Navigation />
+        <HeroIntro />
+        <BlinkScrollExperience onModelReady={() => setModelReady(true)} />
+        <FeaturesGrid />
+        <HowItWorks />
+        <TrustStrip />
+        <Stats />
+        <DownloadCTA />
+        <Footer />
+      </main>
+    </>
+  );
+}
+
+function SiteLoader({ isVisible }) {
+  const { progress } = useProgress();
+  const safeProgress = Number.isFinite(progress) ? progress : 0;
+  const displayedProgress = isVisible ? Math.min(99, Math.max(8, Math.round(safeProgress))) : 100;
+
+  return (
+    <div className={`site-loader ${isVisible ? "" : "is-hidden"}`} aria-hidden={!isVisible}>
+      <div className="site-loader-shell">
+        <div className="site-loader-phone" aria-hidden="true">
+          <div className="site-loader-screen">
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
+        <div className="site-loader-copy">
+          <strong>blink</strong>
+          <span>Loading 3D experience</span>
+        </div>
+        <div className="site-loader-progress" aria-hidden="true">
+          <i style={{ width: `${displayedProgress}%` }} />
+        </div>
+        <small>{displayedProgress}%</small>
+      </div>
+    </div>
   );
 }
 
@@ -155,10 +197,11 @@ function HeroIntro() {
   );
 }
 
-function BlinkScrollExperience() {
+function BlinkScrollExperience({ onModelReady }) {
   const sectionRef = useRef(null);
   const [activeBeat, setActiveBeat] = useState(0);
   const [rotationDeg, setRotationDeg] = useState(0);
+  const [screenIntroT, setScreenIntroT] = useState(0);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -170,10 +213,16 @@ function BlinkScrollExperience() {
     const storyT = storyProgress / STORY_SCROLL_END;
     const normalized = Math.min(beats.length - 0.001, storyT * beats.length);
     const beatIndex = Math.floor(normalized);
-    const nextRotation = storyT * PHONE_FULL_ROTATION_DEG;
+    const rotationT = Math.min(1, storyT / PHONE_ROTATION_END_PROGRESS);
+    const nextRotation = rotationT * PHONE_MAX_ROTATION_DEG;
+    const nextScreenIntroT = Math.min(
+      1,
+      Math.max(0, (latest - SCREEN_INTRO_START) / (SCREEN_INTRO_END - SCREEN_INTRO_START))
+    );
 
     setActiveBeat(beatIndex);
     setRotationDeg(nextRotation);
+    setScreenIntroT(nextScreenIntroT);
   });
 
   const marqueeX = useTransform(scrollYProgress, [0.48, 0.76], ["12%", "-48%"]);
@@ -216,7 +265,12 @@ function BlinkScrollExperience() {
 
         <motion.div className="phone-stage" style={{ y: phoneParkY, scale: phoneParkScale }}>
           <motion.div className="landing-glow" style={{ opacity: phoneGlow }} />
-          <Phone3D rotationY={(rotationDeg * Math.PI) / 180} />
+          <Phone3D
+            rotationY={(rotationDeg * Math.PI) / 180}
+            screenIntroT={screenIntroT}
+            screen={beats[activeBeat].screen}
+            onReady={onModelReady}
+          />
         </motion.div>
       </div>
     </section>
@@ -322,21 +376,54 @@ function TrustStrip() {
 }
 
 function Stats() {
+  const statsRef = useRef(null);
+  const isInView = useInView(statsRef, { once: true, margin: "-120px" });
+
   return (
-    <section className="section-pad stats-section">
-      <article>
-        <strong>50+</strong>
-        <span>Features</span>
-      </article>
-      <article>
-        <strong>0.3s</strong>
-        <span>Transfer time</span>
-      </article>
-      <article>
-        <strong>99.9%</strong>
-        <span>Uptime</span>
-      </article>
+    <section ref={statsRef} className="section-pad stats-section">
+      <CountUpStat start={isInView} value={50} suffix="+" label="Features" />
+      <CountUpStat start={isInView} value={0.3} decimals={1} suffix="s" label="Transfer time" />
+      <CountUpStat start={isInView} value={99.9} decimals={1} suffix="%" label="Uptime" />
     </section>
+  );
+}
+
+function CountUpStat({ start, value, decimals = 0, suffix = "", label }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    if (!start) return undefined;
+
+    let animationFrame;
+    const duration = 1600;
+    const startedAt = performance.now();
+
+    const animate = (now) => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      setDisplayValue(value * easedProgress);
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+        return;
+      }
+
+      setDisplayValue(value);
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [start, value]);
+
+  return (
+    <article>
+      <strong>
+        {displayValue.toFixed(decimals)}
+        {suffix}
+      </strong>
+      <span>{label}</span>
+    </article>
   );
 }
 
