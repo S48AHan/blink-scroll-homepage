@@ -75,6 +75,7 @@ export default function Phone3D({
 
 function RotatingPhone({ rotationY, slantZ, screenIntroT, screen, onReady }) {
   const rotatingGroupRef = useRef(null);
+  const screenSwitchProgressRef = useRef(1);
   const { scene } = useGLTF(MODEL_PATH);
 
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
@@ -108,20 +109,45 @@ function RotatingPhone({ rotationY, slantZ, screenIntroT, screen, onReady }) {
     return () => cancelAnimationFrame(readyFrame);
   }, [clonedScene, onReady]);
 
+  useEffect(() => {
+    screenSwitchProgressRef.current = 0;
+  }, [screen]);
+
   useFrame((_, delta) => {
     if (!rotatingGroupRef.current) return;
+
+    screenSwitchProgressRef.current = Math.min(1, screenSwitchProgressRef.current + delta * 1.85);
+    const switchT = easeOutCubic(screenSwitchProgressRef.current);
+    const pulse = Math.sin(switchT * Math.PI);
+    const targetScale = 1 + pulse * 0.025;
+    const targetLift = pulse * 0.085;
 
     rotatingGroupRef.current.rotation.y = THREE.MathUtils.damp(
       rotatingGroupRef.current.rotation.y,
       rotationY,
-      4.6,
+      3.2,
       delta
     );
     rotatingGroupRef.current.rotation.z = THREE.MathUtils.damp(
       rotatingGroupRef.current.rotation.z,
       slantZ,
-      4.8,
+      3.4,
       delta
+    );
+    rotatingGroupRef.current.rotation.x = THREE.MathUtils.damp(
+      rotatingGroupRef.current.rotation.x,
+      -pulse * 0.035,
+      4.2,
+      delta
+    );
+    rotatingGroupRef.current.position.y = THREE.MathUtils.damp(
+      rotatingGroupRef.current.position.y,
+      targetLift,
+      5.2,
+      delta
+    );
+    rotatingGroupRef.current.scale.setScalar(
+      THREE.MathUtils.damp(rotatingGroupRef.current.scale.x, targetScale, 5.2, delta)
     );
   });
 
