@@ -67,8 +67,7 @@ const beats = [
 ];
 
 const STORY_SCROLL_END = 0.7;
-const PHONE_ROTATION_END_PROGRESS = 0.22;
-const PHONE_MAX_ROTATION_DEG = 24;
+const PHONE_SIDE_ROTATION_DEG = 16;
 const SCREEN_INTRO_START = 0.02;
 const SCREEN_INTRO_END = 0.08;
 
@@ -131,7 +130,7 @@ function SiteLoader({ isVisible }) {
         </div>
         <div className="site-loader-copy">
           <strong>blink</strong>
-          <span>Loading 3D experience</span>
+          {/* <span>Loading experience</span> */}
         </div>
         <div className="site-loader-progress" aria-hidden="true">
           <i style={{ width: `${displayedProgress}%` }} />
@@ -200,7 +199,6 @@ function HeroIntro() {
 function BlinkScrollExperience({ onModelReady }) {
   const sectionRef = useRef(null);
   const [activeBeat, setActiveBeat] = useState(0);
-  const [rotationDeg, setRotationDeg] = useState(0);
   const [screenIntroT, setScreenIntroT] = useState(0);
 
   const { scrollYProgress } = useScroll({
@@ -213,15 +211,12 @@ function BlinkScrollExperience({ onModelReady }) {
     const storyT = storyProgress / STORY_SCROLL_END;
     const normalized = Math.min(beats.length - 0.001, storyT * beats.length);
     const beatIndex = Math.floor(normalized);
-    const rotationT = Math.min(1, storyT / PHONE_ROTATION_END_PROGRESS);
-    const nextRotation = rotationT * PHONE_MAX_ROTATION_DEG;
     const nextScreenIntroT = Math.min(
       1,
       Math.max(0, (latest - SCREEN_INTRO_START) / (SCREEN_INTRO_END - SCREEN_INTRO_START))
     );
 
     setActiveBeat(beatIndex);
-    setRotationDeg(nextRotation);
     setScreenIntroT(nextScreenIntroT);
   });
 
@@ -238,6 +233,10 @@ function BlinkScrollExperience({ onModelReady }) {
   const phoneGlow = useTransform(scrollYProgress, [0.84, 0.94], [0, 1]);
   const parkCopyOpacity = useTransform(scrollYProgress, [0.8, 0.9], [0, 1]);
   const parkCopyY = useTransform(scrollYProgress, [0.8, 0.9], [70, 0]);
+  const activeBeatConfig = beats[activeBeat];
+  const phoneSideDirection = activeBeatConfig.side === "right" ? 1 : -1;
+  const phoneRotationY = phoneSideDirection * (PHONE_SIDE_ROTATION_DEG * Math.PI) / 180;
+  const phoneSlantZ = phoneSideDirection * 0.12;
 
   return (
     <section id="experience" ref={sectionRef} className="scroll-experience">
@@ -246,7 +245,7 @@ function BlinkScrollExperience({ onModelReady }) {
         <motion.div className="orb orb-two" style={{ y: bgTwoY }} />
         <motion.div className="orb orb-three" style={{ y: bgThreeY, rotate: bgRotate }} />
 
-        <FeatureCopy beat={beats[activeBeat]} activeBeat={activeBeat} />
+        <FeatureCopy beat={activeBeatConfig} activeBeat={activeBeat} />
 
         <motion.div className="marquee" style={{ x: marqueeX }}>
           <span>NEW BANKING SENSE</span>
@@ -266,9 +265,10 @@ function BlinkScrollExperience({ onModelReady }) {
         <motion.div className="phone-stage" style={{ y: phoneParkY, scale: phoneParkScale }}>
           <motion.div className="landing-glow" style={{ opacity: phoneGlow }} />
           <Phone3D
-            rotationY={(rotationDeg * Math.PI) / 180}
+            rotationY={phoneRotationY}
+            slantZ={phoneSlantZ}
             screenIntroT={screenIntroT}
-            screen={beats[activeBeat].screen}
+            screen={activeBeatConfig.screen}
             onReady={onModelReady}
           />
         </motion.div>

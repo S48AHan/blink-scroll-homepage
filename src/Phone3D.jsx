@@ -15,7 +15,7 @@ const MODEL_PATH = "/models/source/iphone_17_4.glb";
 // If the imported GLB is ever sideways, change this to something like:
 // [Math.PI / 2, 0, 0] or [0, Math.PI, 0]
 const MODEL_BASE_ROTATION = [0, 0, 0];
-const MODEL_Z_SLANT = -0.12;
+const MODEL_Z_SLANT_LEFT = -0.12;
 const SCREEN_PLANE_SIZE = [1.9, 4.0];
 const SCREEN_PLANE_POSITION = [0, 0.0014, 0.152];
 const SCREEN_TEXTURE_WIDTH = 720;
@@ -23,6 +23,7 @@ const SCREEN_TEXTURE_HEIGHT = 1504;
 
 export default function Phone3D({
   rotationY = 0,
+  slantZ = MODEL_Z_SLANT_LEFT,
   screenIntroT = 0,
   screen = "rewards-overview",
   onReady,
@@ -48,6 +49,7 @@ export default function Phone3D({
             <Center>
               <RotatingPhone
                 rotationY={rotationY}
+                slantZ={slantZ}
                 screenIntroT={screenIntroT}
                 screen={screen}
                 onReady={onReady}
@@ -71,7 +73,7 @@ export default function Phone3D({
   );
 }
 
-function RotatingPhone({ rotationY, screenIntroT, screen, onReady }) {
+function RotatingPhone({ rotationY, slantZ, screenIntroT, screen, onReady }) {
   const rotatingGroupRef = useRef(null);
   const { scene } = useGLTF(MODEL_PATH);
 
@@ -112,14 +114,20 @@ function RotatingPhone({ rotationY, screenIntroT, screen, onReady }) {
     rotatingGroupRef.current.rotation.y = THREE.MathUtils.damp(
       rotatingGroupRef.current.rotation.y,
       rotationY,
-      8,
+      4.6,
+      delta
+    );
+    rotatingGroupRef.current.rotation.z = THREE.MathUtils.damp(
+      rotatingGroupRef.current.rotation.z,
+      slantZ,
+      4.8,
       delta
     );
   });
 
   return (
     <group rotation={MODEL_BASE_ROTATION}>
-      <group ref={rotatingGroupRef} rotation={[0, 0, MODEL_Z_SLANT]}>
+      <group ref={rotatingGroupRef} rotation={[0, 0, slantZ]}>
         <primitive object={clonedScene} />
         <HeroScreenPlane progress={screenIntroT} screen={screen} />
       </group>
