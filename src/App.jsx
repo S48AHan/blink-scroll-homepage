@@ -3,65 +3,66 @@ import { useProgress } from "@react-three/drei";
 import { motion, useInView, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 import {
   Apple,
+  ArrowRight,
   BadgeCheck,
   Building2,
+  ChevronDown,
   ChevronRight,
   Fingerprint,
   LockKeyhole,
   ShieldCheck,
   Smartphone,
-  Sparkles,
 } from "lucide-react";
 import Phone3D from "./Phone3D.jsx";
 
 const beats = [
   {
-    side: "left",
+    side: "right",
     label: "Beat 00",
-    title: "Rewards overview",
-    copy: "Coins, vouchers, quests, and the bottom app nav sit inside the phone as the first product moment.",
+    title: "Bank with more control",
+    copy: "Track, save, and stay on top of your money with a simpler digital experience.",
     screen: "rewards-overview",
   },
   {
     side: "left",
     label: "Beat 01",
-    title: "Send money",
-    copy: "The screen transitions into a focused transfer flow with recipient, source account, amount, and review action.",
+    title: "Send & receive money",
+    copy: "Send, receive, pay, and manage your money from one smart app.",
     screen: "send-money",
   },
   {
     side: "right",
     label: "Beat 02",
-    title: "Quest cards",
-    copy: "Rewards expand into weekly, seasonal, and savings quests with clean progress and start actions.",
+    title: "Rewards that feel valuable",
+    copy: "Earn points, unlock offers, and enjoy benefits designed to reward everyday usage.",
     screen: "rewards-quests",
   },
   {
     side: "left",
     label: "Beat 03",
-    title: "Reward balance",
-    copy: "The phone returns to the high-value coin balance so the loop feels like a real app journey.",
+    title: "Blink account",
+    copy: "Gain valuable insights, understand where your money is going, and make informed financial decisions.",
     screen: "rewards-overview",
   },
   {
     side: "right",
     label: "Beat 04",
-    title: "Review payment",
-    copy: "The money-send page lands again, making the green call to action the clear next step.",
+    title: "Bill payments",
+    copy: "Set and track your financial tools without losing control of day-to-day money moments.",
     screen: "send-money",
   },
   {
     side: "left",
     label: "Beat 05",
-    title: "Mega quest",
-    copy: "A full-width savings quest closes the sequence with a stronger rewards story.",
+    title: "Loans & deposits",
+    copy: "Link accounts, manage deposits, and access services with clarity from one place.",
     screen: "rewards-quests",
   },
   {
     side: "right",
     label: "Beat 06",
-    title: "Rewards in motion",
-    copy: "Each scroll beat swaps the mobile screen with a smooth in-device transition.",
+    title: "Secure banking",
+    copy: "Bank with confidence with security, reliability, and City Bank PLC behind every step.",
     screen: "rewards-overview",
   },
 ];
@@ -72,19 +73,18 @@ const SCREEN_INTRO_START = 0.02;
 const SCREEN_INTRO_END = 0.08;
 
 const featureCards = [
-  ["Account overview", "See savings, current balance, and linked accounts in one place."],
-  ["QR pay", "Generate and share your QR for fast payments and collections."],
-  ["Transfers", "Live send and receive activity stays readable at a glance."],
-  ["Rewards", "Surface loyalty tiers, points, and relevant offers without clutter."],
-  ["Security", "Show biometrics, fraud AI, and encryption as visible product benefits."],
-  ["Bill pay", "Track paid and pending bills in a compact visual grid."],
+  ["Move money with ease", "Send, receive, pay, and manage your money from one smart app."],
+  ["Bank with more control", "Track, save, and stay on top of your money with a simpler digital experience."],
+  ["Built for trust", "Security, reliability, and the confidence of City Bank PLC behind every step."],
+  ["Scan To Pay", "Seamless payments at your fingertips - scan, pay, and go with ease."],
+  ["Secure Banking", "Bank with confidence - our cutting-edge security keeps your finances safe, always."],
+  ["Personalized Investing", "Invest smarter with personalized recommendations tailored to your financial goals."],
 ];
 
 const howItWorks = [
-  ["01", "Download", "Install Blink from the App Store or Google Play."],
-  ["02", "Verify", "Set up your profile and confirm your identity securely."],
-  ["03", "Connect", "Link accounts, payment methods, and your banking profile."],
-  ["04", "Use", "Send, save, pay, and manage money from one experience."],
+  ["Step 1", "Sign Up With Blink", "Create your Blink account and unlock a world of financial possibilities."],
+  ["Step 2", "Connect Your Accounts", "Link all your financial accounts effortlessly to Blink for comprehensive management."],
+  ["Step 3", "Start Banking", "Take control of your finances with Blink's intuitive features and personalized tools."],
 ];
 
 export default function App() {
@@ -155,15 +155,28 @@ function Navigation() {
   return (
     <header className={`nav ${scrolled ? "nav-scrolled" : ""}`}>
       <a href="#top" className="brand-mark" aria-label="Blink home">
-        blink
+        blink <small>by city bank</small>
       </a>
       <nav className="segment" aria-label="Audience switcher">
         <button>Personal</button>
         <button>Business</button>
       </nav>
-      <a href="#download" className="nav-cta">
-        Download App
-      </a>
+      <nav className="nav-links" aria-label="Primary navigation">
+        {["Account & Money", "Payments & Transfer", "Lending & Deposit", "Cards"].map((item) => (
+          <a key={item} href="#features">
+            {item} <ChevronDown size={12} />
+          </a>
+        ))}
+      </nav>
+      <div className="nav-actions">
+        <div className="language-toggle" aria-label="Language selector">
+          <button>EN</button>
+          <button>বাংলা</button>
+        </div>
+        <a href="#download" className="nav-cta">
+          Download App
+        </a>
+      </div>
     </header>
   );
 }
@@ -177,21 +190,22 @@ function HeroIntro() {
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="hero-content"
       >
-        <p className="kicker">
-          <Sparkles size={16} /> City Bank PLC digital banking
-        </p>
-        <h1>blink — nothing like it.</h1>
+        <a href="#download" className="hero-pill">
+          Be first to know when Blink goes live <ArrowRight size={18} />
+        </a>
+        <h1>Banking, Reimagined For The Way Bangladesh Moves.</h1>
         <p>
-          A scroll-driven homepage prototype with a centered 3D latest-iPhone-style hero, sideways Y-axis rotation during the story, a marquee moment, and a trust-led parked state.
+          Blink is almost here. A new digital banking experience by City Bank PLC designed to make everyday money simpler, faster, and more intuitive.
         </p>
         <div className="hero-actions">
           <a href="#download" className="primary-btn">
             Download App
           </a>
           <a href="#experience" className="secondary-btn">
-            Watch the scroll
+            Explore Blink
           </a>
         </div>
+        <p className="hero-proof">Backed by City Bank PLC <span /> Secure by design <span /> Bangladesh Bank licensed</p>
       </motion.div>
     </section>
   );
@@ -227,10 +241,10 @@ function BlinkScrollExperience({ onModelReady }) {
   const bgThreeY = useTransform(scrollYProgress, [0, 1], [45, -95]);
   const bgRotate = useTransform(scrollYProgress, [0, 1], [0, 160]);
 
-  const phoneParkYRaw = useTransform(scrollYProgress, [0.74, 0.92], [0, 230]);
-  const phoneParkScaleRaw = useTransform(scrollYProgress, [0.74, 0.92], [1, 0.78]);
-  const phoneParkY = useSpring(phoneParkYRaw, { stiffness: 80, damping: 22 });
-  const phoneParkScale = useSpring(phoneParkScaleRaw, { stiffness: 80, damping: 22 });
+  const phoneParkYRaw = useTransform(scrollYProgress, [0.72, 0.96], [0, 230]);
+  const phoneParkScaleRaw = useTransform(scrollYProgress, [0.72, 0.96], [1, 0.78]);
+  const phoneParkY = useSpring(phoneParkYRaw, { stiffness: 42, damping: 30 });
+  const phoneParkScale = useSpring(phoneParkScaleRaw, { stiffness: 42, damping: 30 });
   const phoneGlow = useTransform(scrollYProgress, [0.84, 0.94], [0, 1]);
   const parkCopyOpacity = useTransform(scrollYProgress, [0.8, 0.9], [0, 1]);
   const parkCopyY = useTransform(scrollYProgress, [0.8, 0.9], [70, 0]);
@@ -256,11 +270,11 @@ function BlinkScrollExperience({ onModelReady }) {
 
         <motion.div className="park-copy park-left" style={{ opacity: parkCopyOpacity, y: parkCopyY }}>
           <BadgeCheck size={22} />
-          <span>Backed by City Bank PLC and designed to build trust fast.</span>
+          <span>Built around safe access, protection, and customer reassurance.</span>
         </motion.div>
         <motion.div className="park-copy park-right" style={{ opacity: parkCopyOpacity, y: parkCopyY }}>
           <ShieldCheck size={22} />
-          <span>Security messaging stays visible without taking focus away from the phone.</span>
+          <span>Backed by City Bank PLC with established banking confidence.</span>
         </motion.div>
 
         <motion.div className="phone-stage" style={{ y: phoneParkY, scale: phoneParkScale }}>
@@ -311,10 +325,11 @@ function FeatureCopy({ beat, activeBeat }) {
 
 function FeaturesGrid() {
   return (
-    <section className="section-pad features-section">
+    <section id="features" className="section-pad features-section">
       <div className="section-heading">
         <p className="kicker">Features</p>
-        <h2>Everything users need after the hero story.</h2>
+        <h2>What Blink Will <em>Unlock</em></h2>
+        <p>Unlock convenience and efficiency with standout features, revolutionizing your banking journey.</p>
       </div>
       <div className="features-grid">
         {featureCards.map(([title, copy], index) => (
@@ -339,8 +354,9 @@ function HowItWorks() {
   return (
     <section className="section-pad how-section">
       <div className="section-heading">
-        <p className="kicker">How it works</p>
-        <h2>Four steps from download to daily banking.</h2>
+        <p className="kicker">Get started</p>
+        <h2>Get Started In Just 3 Simple Steps.</h2>
+        <p>Three simple steps to unlock the power of Blink and revolutionize your banking experience.</p>
       </div>
       <div className="steps-row">
         {howItWorks.map(([number, title, copy]) => (
@@ -357,11 +373,11 @@ function HowItWorks() {
 
 function TrustStrip() {
   const trust = [
-    [Building2, "City Bank"],
-    [BadgeCheck, "Bangladesh Bank"],
-    [LockKeyhole, "Encryption"],
-    [ShieldCheck, "Fraud AI"],
-    [Fingerprint, "Biometrics"],
+    [Building2, "Made For Bangladesh"],
+    [BadgeCheck, "Backed By City Bank Plc."],
+    [LockKeyhole, "Secure Banking"],
+    [ShieldCheck, "Designed With Security In Mind"],
+    [Fingerprint, "Personalized Investing"],
   ];
 
   return (
@@ -382,9 +398,9 @@ function Stats() {
 
   return (
     <section ref={statsRef} className="section-pad stats-section">
-      <CountUpStat start={isInView} value={50} suffix="+" label="Features" />
-      <CountUpStat start={isInView} value={0.3} decimals={1} suffix="s" label="Transfer time" />
-      <CountUpStat start={isInView} value={99.9} decimals={1} suffix="%" label="Uptime" />
+      <CountUpStat start={isInView} value={50} suffix="+" label="Partner companies around the globe" />
+      <CountUpStat start={isInView} value={125500} suffix="" label="Blink reward points experience" />
+      <CountUpStat start={isInView} value={3} suffix="" label="Simple steps to start banking" />
     </section>
   );
 }
@@ -433,8 +449,8 @@ function DownloadCTA() {
     <section id="download" className="download-cta section-pad">
       <div>
         <p className="kicker">Download Blink</p>
-        <h2>Start banking with a tap.</h2>
-        <p>Use these buttons as placeholders until the real App Store and Google Play URLs are ready.</p>
+        <h2>One app for your everyday money moments.</h2>
+        <p>Pay bills, transfer funds, recharge mobile, cash out, and stay in control of your day-to-day finances.</p>
       </div>
       <div className="store-buttons">
         <a href="#top">
@@ -453,26 +469,26 @@ function Footer() {
     <footer className="footer section-pad">
       <div>
         <a className="brand-mark" href="#top">
-          blink
+          blink <small>by city bank</small>
         </a>
-        <p>blink — nothing like it.</p>
+        <p>Banking, reimagined for the way Bangladesh moves.</p>
       </div>
       <div>
         <h4>Personal</h4>
-        <a>Accounts</a>
+        <a>Account & Money</a>
+        <a>Payments & Transfer</a>
         <a>Cards</a>
-        <a>QR Pay</a>
       </div>
       <div>
         <h4>Business</h4>
-        <a>Payments</a>
-        <a>Merchant QR</a>
-        <a>Reports</a>
+        <a>Business Services</a>
+        <a>Banking Support</a>
+        <a>Rewards</a>
       </div>
       <div>
         <h4>Company</h4>
-        <a>About</a>
-        <a>Security</a>
+        <a>Made For Bangladesh</a>
+        <a>Secure Banking</a>
         <a>Support</a>
       </div>
       <small>© 2026 Blink by City Bank PLC. Prototype for presentation use.</small>

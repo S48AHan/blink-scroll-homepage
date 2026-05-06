@@ -20,6 +20,9 @@ const SCREEN_PLANE_SIZE = [1.9, 4.0];
 const SCREEN_PLANE_POSITION = [0, 0.0014, 0.152];
 const SCREEN_TEXTURE_WIDTH = 720;
 const SCREEN_TEXTURE_HEIGHT = 1504;
+const PHONE_ROTATION_DAMPING = 0.8;
+const PHONE_SLANT_DAMPING = 0.85;
+const SCREEN_TRANSITION_SPEED = 1.35;
 
 export default function Phone3D({
   rotationY = 0,
@@ -114,20 +117,20 @@ function RotatingPhone({ rotationY, slantZ, screenIntroT, screen, onReady }) {
     rotatingGroupRef.current.rotation.y = THREE.MathUtils.damp(
       rotatingGroupRef.current.rotation.y,
       rotationY,
-      4.6,
+      PHONE_ROTATION_DAMPING,
       delta
     );
     rotatingGroupRef.current.rotation.z = THREE.MathUtils.damp(
       rotatingGroupRef.current.rotation.z,
       slantZ,
-      4.8,
+      PHONE_SLANT_DAMPING,
       delta
     );
   });
 
   return (
     <group rotation={MODEL_BASE_ROTATION}>
-      <group ref={rotatingGroupRef} rotation={[0, 0, slantZ]}>
+      <group ref={rotatingGroupRef}>
         <primitive object={clonedScene} />
         <HeroScreenPlane progress={screenIntroT} screen={screen} />
       </group>
@@ -158,7 +161,7 @@ function HeroScreenPlane({ progress, screen }) {
 
     const targetProgress = THREE.MathUtils.clamp(progress, 0, 1);
     const transition = screenTransitionRef.current;
-    transition.progress = Math.min(1, transition.progress + delta * 2.1);
+    transition.progress = Math.min(1, transition.progress + delta * SCREEN_TRANSITION_SPEED);
     drawScreenTransition(textureState, transition.from, transition.to, transition.progress);
     textureState.texture.needsUpdate = true;
 
