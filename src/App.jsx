@@ -69,6 +69,7 @@ const beats = [
 
 const STORY_SCROLL_END = 0.7;
 const PHONE_SIDE_ROTATION_DEG = 16;
+const LOGO_SRC = "/Group.svg";
 
 const featureCards = [
   ["Move money with ease", "Send, receive, pay, and manage your money from one smart app."],
@@ -127,7 +128,7 @@ function SiteLoader({ isVisible }) {
           </div>
         </div>
         <div className="site-loader-copy">
-          <strong>blink</strong>
+          <img src={LOGO_SRC} alt="Blink by City Bank" />
           {/* <span>Loading experience</span> */}
         </div>
         <div className="site-loader-progress" aria-hidden="true">
@@ -153,7 +154,7 @@ function Navigation() {
   return (
     <header className={`nav ${scrolled ? "nav-scrolled" : ""}`}>
       <a href="#top" className="brand-mark" aria-label="Blink home">
-        blink <small>by city bank</small>
+        <img src={LOGO_SRC} alt="" />
       </a>
       <nav className="segment" aria-label="Audience switcher">
         <button>Personal</button>
@@ -530,7 +531,7 @@ function Footer() {
     <footer className="footer section-pad">
       <div>
         <a className="brand-mark" href="#top">
-          blink <small>by city bank</small>
+          <img src={LOGO_SRC} alt="Blink by City Bank" />
         </a>
         <p>Banking, reimagined for the way Bangladesh moves.</p>
       </div>
