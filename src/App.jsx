@@ -69,8 +69,6 @@ const beats = [
 
 const STORY_SCROLL_END = 0.7;
 const PHONE_SIDE_ROTATION_DEG = 16;
-const SCREEN_INTRO_START = 0.02;
-const SCREEN_INTRO_END = 0.08;
 
 const featureCards = [
   ["Move money with ease", "Send, receive, pay, and manage your money from one smart app."],
@@ -214,25 +212,46 @@ function HeroIntro() {
 function BlinkScrollExperience({ onModelReady }) {
   const sectionRef = useRef(null);
   const [activeBeat, setActiveBeat] = useState(0);
-  const [screenIntroT, setScreenIntroT] = useState(0);
+  const [pageMetrics, setPageMetrics] = useState({
+    width: 1440,
+    height: 900,
+    experienceTop: 900,
+  });
 
+  const { scrollY } = useScroll();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
+
+  useEffect(() => {
+    const updatePageMetrics = () => {
+      if (!sectionRef.current) return;
+
+      const rect = sectionRef.current.getBoundingClientRect();
+      setPageMetrics({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        experienceTop: rect.top + window.scrollY,
+      });
+    };
+
+    updatePageMetrics();
+    window.addEventListener("resize", updatePageMetrics);
+    window.addEventListener("load", updatePageMetrics);
+    return () => {
+      window.removeEventListener("resize", updatePageMetrics);
+      window.removeEventListener("load", updatePageMetrics);
+    };
+  }, []);
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     const storyProgress = Math.min(STORY_SCROLL_END, Math.max(0, latest));
     const storyT = storyProgress / STORY_SCROLL_END;
     const normalized = Math.min(beats.length - 0.001, storyT * beats.length);
     const beatIndex = Math.floor(normalized);
-    const nextScreenIntroT = Math.min(
-      1,
-      Math.max(0, (latest - SCREEN_INTRO_START) / (SCREEN_INTRO_END - SCREEN_INTRO_START))
-    );
 
     setActiveBeat(beatIndex);
-    setScreenIntroT(nextScreenIntroT);
   });
 
   const marqueeX = useTransform(scrollYProgress, [0.48, 0.76], ["12%", "-48%"]);
@@ -248,6 +267,42 @@ function BlinkScrollExperience({ onModelReady }) {
   const phoneGlow = useTransform(scrollYProgress, [0.84, 0.94], [0, 1]);
   const parkCopyOpacity = useTransform(scrollYProgress, [0.8, 0.9], [0, 1]);
   const parkCopyY = useTransform(scrollYProgress, [0.8, 0.9], [70, 0]);
+  const heroOffsetX = pageMetrics.width >= 980 ? pageMetrics.width * 0.26 : 0;
+  const heroOffsetY = pageMetrics.width >= 980 ? pageMetrics.height * 0.04 : pageMetrics.height * 0.16;
+  const heroScale = pageMetrics.width >= 980 ? 1.40 : 0.76;
+  const heroTransitionStart = Math.max(1, pageMetrics.experienceTop * 0.38);
+  const heroTransitionEnd = Math.max(heroTransitionStart + 1, pageMetrics.experienceTop);
+  const phoneHeroX = useTransform(
+    scrollY,
+    [0, heroTransitionStart, heroTransitionEnd],
+    [heroOffsetX, heroOffsetX, 0]
+  );
+  const phoneHeroY = useTransform(
+    scrollY,
+    [0, heroTransitionStart, heroTransitionEnd],
+    [heroOffsetY, heroOffsetY, 0]
+  );
+  const phoneHeroScale = useTransform(
+    scrollY,
+    [0, heroTransitionStart, heroTransitionEnd],
+    [heroScale, heroScale, 1]
+  );
+  const phoneLayerY = useTransform([phoneHeroY, phoneParkY], ([heroY, parkY]) => heroY + parkY);
+  const phoneLayerScale = useTransform(
+    [phoneHeroScale, phoneParkScale],
+    ([baseScale, parkScale]) => baseScale * parkScale
+  );
+  const heroPhoneOpacity = pageMetrics.width >= 760 ? 1 : 0;
+  const phoneIntroOpacity = useTransform(
+    scrollY,
+    [0, heroTransitionStart, heroTransitionEnd],
+    [heroPhoneOpacity, heroPhoneOpacity, 1]
+  );
+  const phoneExperienceOpacity = useTransform(scrollYProgress, [0, 0.97, 1], [1, 1, 0]);
+  const phoneLayerOpacity = useTransform(
+    [phoneIntroOpacity, phoneExperienceOpacity],
+    ([introOpacity, experienceOpacity]) => introOpacity * experienceOpacity
+  );
   const activeBeatConfig = beats[activeBeat];
   const phoneSideDirection = activeBeatConfig.side === "right" ? 1 : -1;
   const phoneRotationY = phoneSideDirection * (PHONE_SIDE_ROTATION_DEG * Math.PI) / 180;
@@ -255,6 +310,23 @@ function BlinkScrollExperience({ onModelReady }) {
 
   return (
     <section id="experience" ref={sectionRef} className="scroll-experience">
+      <motion.div
+        className="shared-phone-stage"
+        style={{ x: phoneHeroX, y: phoneLayerY, scale: phoneLayerScale, opacity: phoneLayerOpacity }}
+        aria-hidden="true"
+      >
+        <div className="shared-phone-anchor">
+          <motion.div className="landing-glow" style={{ opacity: phoneGlow }} />
+          <Phone3D
+            rotationY={phoneRotationY}
+            slantZ={phoneSlantZ}
+            screenIntroT={1}
+            screen={activeBeatConfig.screen}
+            onReady={onModelReady}
+          />
+        </div>
+      </motion.div>
+
       <div className="experience-sticky">
         <motion.div className="orb orb-one" style={{ y: bgOneY, rotate: bgRotate }} />
         <motion.div className="orb orb-two" style={{ y: bgTwoY }} />
@@ -275,17 +347,6 @@ function BlinkScrollExperience({ onModelReady }) {
         <motion.div className="park-copy park-right" style={{ opacity: parkCopyOpacity, y: parkCopyY }}>
           <ShieldCheck size={22} />
           <span>Backed by City Bank PLC with established banking confidence.</span>
-        </motion.div>
-
-        <motion.div className="phone-stage" style={{ y: phoneParkY, scale: phoneParkScale }}>
-          <motion.div className="landing-glow" style={{ opacity: phoneGlow }} />
-          <Phone3D
-            rotationY={phoneRotationY}
-            slantZ={phoneSlantZ}
-            screenIntroT={screenIntroT}
-            screen={activeBeatConfig.screen}
-            onReady={onModelReady}
-          />
         </motion.div>
       </div>
     </section>

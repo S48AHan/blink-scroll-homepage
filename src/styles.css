@@ -383,6 +383,8 @@ main {
 }
 
 .hero-intro {
+  position: relative;
+  overflow: hidden;
   min-height: 100vh;
   display: grid;
   align-items: center;
@@ -393,6 +395,8 @@ main {
 }
 
 .hero-content {
+  position: relative;
+  z-index: 10;
   max-width: 760px;
 }
 
@@ -1742,5 +1746,34 @@ main {
     height: min(68vh, 620px) !important;
     min-width: 260px !important;
     min-height: 460px !important;
+  }
+}
+
+.shared-phone-stage {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  z-index: 5 !important;
+  width: 0 !important;
+  height: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  pointer-events: none !important;
+  transform-origin: center center !important;
+  will-change: transform, opacity;
+}
+
+.shared-phone-anchor {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: max-content;
+  height: max-content;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 620px) {
+  .shared-phone-stage {
+    z-index: 2 !important;
   }
 }
